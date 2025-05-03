@@ -1,24 +1,23 @@
 # Go Microservices Architecture
 
-A production-grade microservices architecture using Go 1.24.2, following clean architecture principles and best practices.
+A production-grade microservices architecture implemented in Go 1.24.2, featuring three core services with comprehensive observability, security, and scalability.
 
-## Services
+## Core Services
 
-- **User Service**: Handles user management and authentication
-- **Product Service**: Manages product catalog and inventory
-- **Order Service**: Processes and manages orders
+- 🔐 **User Service**: Authentication and user management
+- 📦 **Product Service**: Product catalog and inventory
+- 🛒 **Order Service**: Order processing and management
 
-## Features
+## Key Features
 
-- Clean Architecture
+- Clean Architecture principles
 - Domain-Driven Design
 - CQRS Pattern
 - Event-Driven Architecture
 - Service Discovery with Consul
 - Message Queue with RabbitMQ
 - Distributed Tracing with Jaeger
-- Metrics with Prometheus
-- Monitoring with Grafana
+- Metrics with Prometheus & Grafana
 - Secrets Management with Vault
 - Rate Limiting
 - Circuit Breaking
@@ -29,14 +28,18 @@ A production-grade microservices architecture using Go 1.24.2, following clean a
 - Docker Containerization
 - Kubernetes Ready
 
-## Prerequisites
+## Tech Stack
 
-- Go 1.24.2 or later
-- Docker and Docker Compose
-- Make
-- Protocol Buffers Compiler
-- PostgreSQL (for User and Order services)
-- MongoDB (for Product service)
+- **Language**: Go 1.24.2
+- **Databases**:
+  - PostgreSQL 15 (User and Order services)
+  - MongoDB 5.0 (Product service)
+- **Infrastructure**:
+  - Consul 1.15 (Service Discovery)
+  - RabbitMQ 3.12 (Message Queue)
+  - Prometheus & Grafana (Monitoring)
+  - Jaeger 1.47 (Distributed Tracing)
+  - HashiCorp Vault 1.15.2 (Secrets Management)
 
 ## Project Structure
 
@@ -63,6 +66,15 @@ A production-grade microservices architecture using Go 1.24.2, following clean a
     └── order-service/     # Order service
 ```
 
+## Prerequisites
+
+- Go 1.24.2 or later
+- Docker and Docker Compose
+- Make
+- Protocol Buffers Compiler
+- PostgreSQL (for User and Order services)
+- MongoDB (for Product service)
+
 ## Getting Started
 
 1. Clone the repository:
@@ -84,12 +96,12 @@ A production-grade microservices architecture using Go 1.24.2, following clean a
    make build
    ```
 
-4. Start the services:
+4. Start all services:
    ```bash
-   make run
+   docker compose up -d
    ```
 
-## Development
+## Development Commands
 
 - **Build**: `make build`
 - **Test**: `make test`
@@ -98,7 +110,7 @@ A production-grade microservices architecture using Go 1.24.2, following clean a
 - **Lint**: `make lint`
 - **Generate Protocol Buffers**: `make proto`
 
-## Docker
+## Docker Commands
 
 - **Build Images**: `make docker-build`
 - **Start Services**: `make docker-run`
@@ -106,15 +118,17 @@ A production-grade microservices architecture using Go 1.24.2, following clean a
 
 ## Service Endpoints
 
-- User Service: http://localhost:8081
-- Product Service: http://localhost:8082
-- Order Service: http://localhost:8083
-- Consul UI: http://localhost:8500
-- RabbitMQ UI: http://localhost:15672
-- Prometheus: http://localhost:9090
-- Grafana: http://localhost:3000
-- Jaeger UI: http://localhost:16686
-- Vault UI: http://localhost:8200
+- **Core Services**:
+  - User Service: http://localhost:8081 (API: 8081, gRPC: 9091)
+  - Product Service: http://localhost:8082 (API: 8082, gRPC: 9092)
+  - Order Service: http://localhost:8083 (API: 8083, gRPC: 9093)
+- **Infrastructure UIs**:
+  - Consul: http://localhost:8500
+  - RabbitMQ: http://localhost:15672
+  - Grafana: http://localhost:3000
+  - Jaeger: http://localhost:16686
+  - Prometheus: http://localhost:9090
+  - Vault: http://localhost:8200
 
 ## API Documentation
 
