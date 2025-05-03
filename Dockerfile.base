@@ -1,0 +1,63 @@
+FROM golang:1.24.2-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache \
+    git \
+    make \
+    protobuf \
+    protobuf-dev \
+    gcc \
+    musl-dev
+
+# Install protoc-gen-go and protoc-gen-go-grpc
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.31.0
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
+
+# Set working directory
+WORKDIR /app
+
+# Copy go mod and sum files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy the source code
+COPY . .
+
+# Build the application
+ARG SERVICE_PATH
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./${SERVICE_PATH}/cmd/api
+
+# Final stage
+FROM alpine:3.19
+
+# Install runtime dependencies
+RUN apk add --no-cache \
+    ca-certificates \
+    tzdata \
+    curl
+
+# Create non-root user
+RUN adduser -D -g '' appuser
+
+# Set working directory
+WORKDIR /app
+
+# Copy binary from builder
+COPY --from=builder /app/main .
+
+# Copy configuration files
+COPY --from=builder /app/config ./config
+
+# Set ownership to non-root user
+RUN chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+
+# Expose ports (to be overridden by specific service Dockerfiles)
+EXPOSE 8080 9090
+
+# Command to run the application
+CMD ["./main"] 

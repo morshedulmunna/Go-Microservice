@@ -1,0 +1,70 @@
+app:
+  name: product-service
+  env: development
+  debug: true
+  version: 1.0.0
+
+http:
+  port: 8082
+
+grpc:
+  port: 9092
+
+mongodb:
+  uri: mongodb://mongodb:mongodb@mongodb:27017
+  database: product_service
+
+consul:
+  host: consul
+  port: 8500
+  serviceName: product-service
+  serviceID: product-service-1
+
+rabbitmq:
+  host: rabbitmq
+  port: 5672
+  user: guest
+  password: guest
+  vhost: /
+
+vault:
+  address: http://vault:8200
+  token: root
+
+observability:
+  logLevel: debug
+  jaegerHost: jaeger
+  jaegerPort: 6831
+  prometheusPort: 9092
+
+rateLimit:
+  requests: 100
+  duration: 60
+
+circuitBreaker:
+  timeout: 30
+  maxFailures: 5
+
+cors:
+  allowedOrigins:
+    - "*"
+  allowedMethods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  allowedHeaders:
+    - Accept
+    - Authorization
+    - Content-Type
+  maxAge: 300
+
+healthCheck:
+  port: 8082
+  endpoint: /health
+
+features:
+  grpcEnabled: true
+  tracingEnabled: true
+  metricsEnabled: true 

@@ -1,0 +1,92 @@
+app:
+  name: go-microservice
+  env: development
+  debug: true
+  version: 1.0.0
+
+http:
+  port: 8081
+
+grpc:
+  port: 9091
+
+database:
+  driver: postgres
+  host: postgres
+  port: 5432
+  name: user_service
+  user: postgres
+  password: postgres
+  sslmode: disable
+  maxConnections: 100
+  maxIdleConnections: 10
+  maxLifetimeConnections: 2
+
+mongodb:
+  uri: mongodb://mongodb:mongodb@mongodb:27017
+  database: product_service
+
+jwt:
+  secretKey: your-secret-key
+  expirationHours: 24
+
+consul:
+  host: consul
+  port: 8500
+  serviceName: go-microservice
+  serviceID: go-microservice-1
+
+rabbitmq:
+  host: rabbitmq
+  port: 5672
+  user: guest
+  password: guest
+  vhost: /
+
+redis:
+  host: redis
+  port: 6379
+  password: ""
+  db: 0
+
+vault:
+  address: http://vault:8200
+  token: root
+
+observability:
+  logLevel: debug
+  jaegerHost: jaeger
+  jaegerPort: 6831
+  prometheusPort: 9090
+
+rateLimit:
+  requests: 100
+  duration: 60
+
+circuitBreaker:
+  timeout: 30
+  maxFailures: 5
+
+cors:
+  allowedOrigins:
+    - "*"
+  allowedMethods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  allowedHeaders:
+    - Accept
+    - Authorization
+    - Content-Type
+  maxAge: 300
+
+healthCheck:
+  port: 8081
+  endpoint: /health
+
+features:
+  grpcEnabled: true
+  tracingEnabled: true
+  metricsEnabled: true 

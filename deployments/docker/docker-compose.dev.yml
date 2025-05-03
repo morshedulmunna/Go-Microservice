@@ -1,0 +1,157 @@
+version: "3.8"
+
+services:
+  # User Service
+  user-service:
+    build:
+      context: ../../services/user-service
+      dockerfile: deployments/docker/Dockerfile.dev
+    environment:
+      - ENV=development
+      - DB_HOST=user-db
+      - CONSUL_HOST=consul
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - user-db
+      - consul
+      - rabbitmq
+    ports:
+      - "8081:8081"
+      - "9091:9091" # gRPC port
+
+  # Product Service
+  product-service:
+    build:
+      context: ../../services/product-service
+      dockerfile: deployments/docker/Dockerfile.dev
+    environment:
+      - ENV=development
+      - DB_HOST=product-db
+      - CONSUL_HOST=consul
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - product-db
+      - consul
+      - rabbitmq
+    ports:
+      - "8082:8082"
+      - "9092:9092" # gRPC port
+
+  # Order Service
+  order-service:
+    build:
+      context: ../../services/order-service
+      dockerfile: deployments/docker/Dockerfile.dev
+    environment:
+      - ENV=development
+      - DB_HOST=order-db
+      - CONSUL_HOST=consul
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - order-db
+      - consul
+      - rabbitmq
+    ports:
+      - "8083:8083"
+      - "9093:9093" # gRPC port
+
+  # Databases
+  user-db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=user_service
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - user-db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  product-db:
+    image: mongodb:5.0
+    environment:
+      - MONGO_INITDB_DATABASE=product_service
+      - MONGO_INITDB_ROOT_USERNAME=mongodb
+      - MONGO_INITDB_ROOT_PASSWORD=mongodb
+    volumes:
+      - product-db-data:/data/db
+    ports:
+      - "27017:27017"
+
+  order-db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=order_service
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - order-db-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  # Service Discovery
+  consul:
+    image: consul:1.15
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    command: "agent -dev -client=0.0.0.0"
+
+  # Message Queue
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+
+  # Monitoring & Observability
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:10.0.0
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.47
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14250:14250"
+      - "14268:14268"
+      - "14269:14269"
+      - "9411:9411"
+
+  # Vault for Secrets Management
+  vault:
+    image: vault:1.13
+    ports:
+      - "8200:8200"
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=root
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+
+volumes:
+  user-db-data:
+  product-db-data:
+  order-db-data:
+  prometheus-data:
+  grafana-data:

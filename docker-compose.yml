@@ -1,0 +1,146 @@
+version: "3.8"
+
+services:
+  # User Service
+  user-service:
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile
+    environment:
+      - APP_ENV=development
+    volumes:
+      - ./config/config.docker.yaml:/app/config/config.yaml
+    depends_on:
+      - postgres
+      - consul
+      - rabbitmq
+    ports:
+      - "8081:8081"
+      - "9091:9091"
+
+  # Product Service
+  product-service:
+    build:
+      context: .
+      dockerfile: services/product-service/Dockerfile
+    environment:
+      - APP_ENV=development
+    volumes:
+      - ./config/config.product.yaml:/app/config/config.yaml
+    depends_on:
+      - mongodb
+      - consul
+      - rabbitmq
+    ports:
+      - "8082:8082"
+      - "9092:9092"
+
+  # Order Service
+  order-service:
+    build:
+      context: .
+      dockerfile: services/order-service/Dockerfile
+    environment:
+      - APP_ENV=development
+    volumes:
+      - ./config/config.order.yaml:/app/config/config.yaml
+    depends_on:
+      - postgres
+      - consul
+      - rabbitmq
+    ports:
+      - "8083:8083"
+      - "9093:9093"
+
+  # PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_MULTIPLE_DATABASES=user_service,order_service
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-postgres.sh:/docker-entrypoint-initdb.d/init-postgres.sh
+    ports:
+      - "5432:5432"
+
+  # MongoDB
+  mongodb:
+    image: mongo:5.0
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongodb
+      - MONGO_INITDB_ROOT_PASSWORD=mongodb
+      - MONGO_INITDB_DATABASE=product_service
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+
+  # Consul
+  consul:
+    image: consul:1.15
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    command: "agent -dev -client=0.0.0.0"
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    volumes:
+      - ./deployments/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:10.0.0
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+
+  # Jaeger
+  jaeger:
+    image: jaegertracing/all-in-one:1.47
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14250:14250"
+      - "14268:14268"
+      - "14269:14269"
+      - "9411:9411"
+
+  # Vault
+  vault:
+    image: hashicorp/vault:1.15.2
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=root
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - "8200:8200"
+
+volumes:
+  postgres_data:
+  mongodb_data:
+  prometheus_data:
+  grafana_data:
